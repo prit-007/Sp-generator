@@ -1,0 +1,6 @@
+@Sp_Generator_HostAddress = http://localhost:5229
+
+GET {{Sp_Generator_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
