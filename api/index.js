@@ -27,6 +27,7 @@ const parseConnectionString = (connectionString) => {
     return config;
 };
 
+// API Route to Connect to SQL Server
 app.post('/connect', async (req, res) => {
     const { connectionString } = req.body;
 

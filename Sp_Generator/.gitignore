@@ -1,6 +1,4 @@
-# Ignore build output and runtime files
-[Bb]in/
-[Oo]bj/
+
 
 # Ignore user-specific files
 *.user

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Sp_Generator.props" />
+</Project>
