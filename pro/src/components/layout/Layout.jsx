@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -18,10 +17,10 @@ const Layout = ({
   toggleColumnExpand
 }) => {
   return (
-    <div className="min-h-screen bg-teal-50">
+    <div className="flex flex-col h-screen">
       <Header onRefresh={onRefresh} />
       
-      <div className="flex max-h-[calc(100vh-64px)]">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar 
           metadata={metadata}
           searchTerm={searchTerm}
