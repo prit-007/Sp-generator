@@ -4,6 +4,8 @@ import { FaDatabase, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const ConnectionPage = () => {
   const [connections, setConnections] = useState([]);
   const [newConnectionString, setNewConnectionString] = useState('');
@@ -116,7 +118,7 @@ const ConnectionPage = () => {
 
   const handleConnect =async (connectionString) => {
     try{
-      const connection = await axios.post('http://localhost:61205/api/Database/connect',{connectionString: connectionString})
+      const connection = await axios.post(`${API_URL}/Database/connect`,{connectionString: connectionString})
       if (connection.status === 200){
         console.log(connection.data.message)
         Swal.fire({
