@@ -95,3 +95,4 @@ D:\Github_Repos\sp-generator-tool\Sp_Generator\obj\Debug\net8.0\Sp_Generator.pdb
 D:\Github_Repos\sp-generator-tool\Sp_Generator\obj\Debug\net8.0\Sp_Generator.genruntimeconfig.cache
 D:\Github_Repos\sp-generator-tool\Sp_Generator\obj\Debug\net8.0\ref\Sp_Generator.dll
 D:\Github_Repos\sp-generator-tool\Sp_Generator\bin\Debug\net8.0\Newtonsoft.Json.dll
+D:\Github_Repos\sp-generator-tool\Sp_Generator\obj\Debug\net8.0\Sp_Generator.sourcelink.json

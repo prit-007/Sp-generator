@@ -104,6 +104,27 @@ namespace Sp_Generator.Controllers
             }
         }
         #endregion
+
+        #region POST create stored procedures
+
+        [HttpPost("create-stored-procedures")]
+        public IActionResult CreateStoredProcedures([FromBody] CreateStoredProceduresRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.TableName) || request.Procedures == null || request.Procedures.Count == 0)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            var results = _repository.CreateStoredProcedures(request.TableName, request.Procedures);
+            return Ok(results);
+        }
+        #endregion
+
+    }
+    public class CreateStoredProceduresRequest
+    {
+        public string TableName { get; set; }
+        public Dictionary<string, string> Procedures { get; set; }
     }
     public class ConnectionRequest
     {

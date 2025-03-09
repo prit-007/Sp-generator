@@ -17,6 +17,22 @@
   },
   {
     "ContainingType": "Sp_Generator.Controllers.DatabaseController",
+    "Method": "CreateStoredProcedures",
+    "RelativePath": "api/Database/create-stored-procedures",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Sp_Generator.Controllers.CreateStoredProceduresRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Sp_Generator.Controllers.DatabaseController",
     "Method": "GetDatabaseMetadata",
     "RelativePath": "api/Database/metadata",
     "HttpMethod": "GET",

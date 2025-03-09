@@ -82,6 +82,37 @@
         }
       }
     },
+    "/api/Database/create-stored-procedures": {
+      "post": {
+        "tags": [
+          "Database"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoredProceduresRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoredProceduresRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStoredProceduresRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/WeatherForecast": {
       "get": {
         "tags": [
@@ -129,6 +160,23 @@
         "properties": {
           "connectionString": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateStoredProceduresRequest": {
+        "type": "object",
+        "properties": {
+          "tableName": {
+            "type": "string",
+            "nullable": true
+          },
+          "procedures": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
             "nullable": true
           }
         },

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sp_Generator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b30995d4f2b0a7aadfba0a2fe427ac0f146ee405")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68d8d5ab65a7707102cbd74fb95a4df4315f016b")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sp_Generator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sp_Generator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+
 import { FaCode, FaCopy, FaDownload, FaInfoCircle, FaPlay, FaPlus, FaMinus, FaKey } from 'react-icons/fa';
 import { Tooltip } from 'react-tooltip';
+import { FaDatabase, FaFileDownload, FaSync } from 'react-icons/fa';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const SPGenerator = ({ activeTable, metadata }) => {
   const [spType, setSpType] = useState('select');
@@ -11,6 +15,11 @@ const SPGenerator = ({ activeTable, metadata }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [foreignKeySelections, setForeignKeySelections] = useState({});
   const [foreignKeyColumns, setForeignKeyColumns] = useState({});
+
+  const [isCreatingAll, setIsCreatingAll] = useState(false);
+  const [isCreatingInDB, setIsCreatingInDB] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null);
+  const [allProcedures, setAllProcedures] = useState({});
 
   // Initialize foreign key selections
   React.useEffect(() => {
@@ -72,7 +81,39 @@ const SPGenerator = ({ activeTable, metadata }) => {
       });
     }
   };
+  const generateAllProcedures = () => {
+    setError('');
+    setIsCreatingAll(true);
 
+    const columns = includedColumns.length > 0 ?
+        includedColumns :
+        metadata[activeTable].Columns.map(col => col.Name);
+
+    try {
+        const procedures = {
+            select: generateSelectSP(activeTable, columns, []),
+            select_with_where: whereClauses.length > 0 ? generateSelectSP(activeTable, columns, whereClauses) : null,
+            insert: generateInsertSP(activeTable, columns),
+            update: generateUpdateSP(activeTable, columns, whereClauses),
+            delete: generateDeleteSP(activeTable, whereClauses)
+        };
+
+        setAllProcedures(procedures);
+
+        // Combine all procedures into one string for display
+        const combinedSP = Object.entries(procedures)
+            .filter(([_, sp]) => sp !== null)
+            .map(([type, sp]) => `-- ${type.toUpperCase()} PROCEDURE\n${sp}`)
+            .join('\n\n');
+
+        setGeneratedSP(combinedSP);
+        setShowPreview(true);
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setIsCreatingAll(false);
+    }
+};
   const generateSP = () => {
     setError('');
     const columns = includedColumns.length > 0 ?
@@ -105,7 +146,56 @@ const SPGenerator = ({ activeTable, metadata }) => {
     setGeneratedSP(sp);
     setShowPreview(true);
   };
+  const createProceduresInDB = async () => {
+    setError('');
+    setIsCreatingInDB(true);
 
+    try {
+        // First generate all procedures if not already done
+        if (Object.keys(allProcedures).length === 0) {
+            generateAllProcedures();
+        }
+
+        // Filter out null procedures
+        const proceduresToCreate = Object.fromEntries(
+            Object.entries(allProcedures).filter(([_, sp]) => sp !== null)
+        );
+
+        // Make API call
+        const response = await fetch(`${API_URL}/Database/create-stored-procedures`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                tableName: activeTable,
+                procedures: proceduresToCreate
+            }),
+        });
+
+        const data = await response.json();
+        console.log(data);
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to create stored procedures');
+        }
+
+        setApiResponse(data);
+
+        // Show success message
+        setGeneratedSP(`/* 
+SUCCESS: Created the following stored procedures:
+${Object.keys(proceduresToCreate).map(type => `- SP_${type.charAt(0).toUpperCase() + type.slice(1)}_${activeTable}`).join('\n')}
+
+Response from server: 
+${JSON.stringify(data, null, 2)}
+*/\n\n${generatedSP}`);
+
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        setIsCreatingInDB(false);
+    }
+};
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedSP);
     // Show a temporary success message
@@ -118,7 +208,19 @@ const SPGenerator = ({ activeTable, metadata }) => {
       }, 2000);
     }
   };
+  const downloadAllProcedures = () => {
+    if (Object.keys(allProcedures).length === 0) {
+      generateAllProcedures();
+    }
 
+    const blob = new Blob([generatedSP], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `All_SPs_${activeTable}.sql`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   const downloadSP = () => {
     const blob = new Blob([generatedSP], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -158,28 +260,28 @@ const SPGenerator = ({ activeTable, metadata }) => {
 
     // Handle foreign key selections
     metadata[activeTable].ForeignKeys.forEach(fk => {
-        if (foreignKeySelections[fk.Column]) {
-            const refColumns = foreignKeyColumns[fk.Column];
+      if (foreignKeySelections[fk.Column]) {
+        const refColumns = foreignKeyColumns[fk.Column];
 
-            joins += `\n\tLEFT JOIN ${fk.ReferenceTable} ON ${tableName}.${fk.Column} = ${fk.ReferenceTable}.${fk.ReferenceColumn}`;
+        joins += `\n\tLEFT JOIN ${fk.ReferenceTable} ON ${tableName}.${fk.Column} = ${fk.ReferenceTable}.${fk.ReferenceColumn}`;
 
-            // Add selected foreign key columns to the SELECT clause
-            if (refColumns && refColumns.length > 0) {
-                refColumns.forEach(refCol => {
-                    selectedColumns.push(`\t${fk.ReferenceTable}.${refCol} AS ${fk.ReferenceTable}_${refCol}`);
-                });
-            }
+        // Add selected foreign key columns to the SELECT clause
+        if (refColumns && refColumns.length > 0) {
+          refColumns.forEach(refCol => {
+            selectedColumns.push(`\t${fk.ReferenceTable}.${refCol} AS ${fk.ReferenceTable}_${refCol}`);
+          });
         }
+      }
     });
 
     columnsList = selectedColumns.map(col => {
-        if (col.includes(' AS ')) return col;
-        return `\t${tableName}.${col}`;
+      if (col.includes(' AS ')) return col;
+      return `\t${tableName}.${col}`;
     }).join(',\n\t\t');
 
     if (whereClauses.length > 0) {
-        whereParams = whereClauses.map(col => `@${col} ${getColumnDataType(col)}`).join(',\n\t\t');
-        whereClause = 'WHERE ' + whereClauses.map(col => `${tableName}.${col} = @${col}`).join('\n\t\tAND ');
+      whereParams = whereClauses.map(col => `@${col} ${getColumnDataType(col)}`).join(',\n\t\t');
+      whereClause = 'WHERE ' + whereClauses.map(col => `${tableName}.${col} = @${col}`).join('\n\t\tAND ');
     }
 
     return `CREATE PROCEDURE SP_Select_${tableName}
@@ -190,9 +292,8 @@ const SPGenerator = ({ activeTable, metadata }) => {
           ${columnsList}
         FROM ${tableName}${joins}
         ${whereClause}
-    END
-    GO`;
-};
+    END`;
+  };
 
   const generateInsertSP = (tableName, columns) => {
     const columnsList = columns.join(', ');
@@ -200,13 +301,13 @@ const SPGenerator = ({ activeTable, metadata }) => {
     const valuesList = columns.map(col => `@${col}`).join(', ');
 
     return `CREATE PROCEDURE SP_Insert_${tableName}
-  ${paramsList}
-AS
-BEGIN
-  INSERT INTO ${tableName} (${columnsList})
-  VALUES (${valuesList})
-END
-GO`;
+            ${paramsList}
+            AS
+            BEGIN
+              INSERT INTO ${tableName} (${columnsList})
+              VALUES (${valuesList})
+            END
+`;
   };
 
   const generateUpdateSP = (tableName, columns, whereClauses) => {
@@ -229,7 +330,7 @@ BEGIN
   SET ${setClause}
   ${whereClause}
 END
-GO`;
+`;
   };
 
   const generateDeleteSP = (tableName, whereClauses) => {
@@ -247,7 +348,7 @@ BEGIN
   DELETE FROM ${tableName}
   ${whereClause}
 END
-GO`;
+`;
   };
 
   // Get reference table columns for a foreign key
@@ -283,6 +384,13 @@ GO`;
           </div>
         )}
 
+        {apiResponse && (
+          <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg border border-green-200 flex items-center">
+            <FaInfoCircle className="mr-2 flex-shrink-0" />
+            <span>Successfully created stored procedures in the database!</span>
+          </div>
+        )}
+
         {!showPreview ? (
           <>
             <div className="mb-6">
@@ -300,8 +408,8 @@ GO`;
                     key={type}
                     onClick={() => setSpType(type)}
                     className={`px-4 py-3 rounded-lg capitalize shadow-sm transition duration-200 ${spType === type
-                        ? 'bg-teal-600 text-white font-medium'
-                        : 'bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200'
+                      ? 'bg-teal-600 text-white font-medium'
+                      : 'bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200'
                       }`}
                   >
                     {type}
@@ -393,7 +501,7 @@ GO`;
             </div>
 
             {/* Foreign Key Selections (Only for SELECT procedures) */}
-            {spType === 'select' && metadata[activeTable].ForeignKeys.length > 0 && (
+            {spType === 'select' && metadata[activeTable].ForeignKeys && metadata[activeTable].ForeignKeys.length > 0 && (
               <div className="mb-6 bg-white rounded-lg border border-teal-100 shadow-sm">
                 <div className="px-4 py-3 bg-teal-50 border-b border-teal-100">
                   <h4 className="font-medium text-teal-700 flex items-center">
@@ -455,16 +563,67 @@ GO`;
               </div>
             )}
 
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={generateSP}
-                className="px-8 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-lg 
-                   hover:from-teal-500 hover:to-teal-600 shadow-md transition-all duration-200 
-                   flex items-center font-medium"
-              >
-                <FaPlay className="mr-2" />
-                Generate Stored Procedure
-              </button>
+            {/* Action Buttons with Improved UX */}
+            <div className="bg-teal-50 rounded-lg p-5 border border-teal-100 shadow-sm mb-6">
+              <h4 className="font-medium text-teal-800 mb-4 flex items-center">
+                <FaPlay className="mr-2 text-orange-500" />
+                Generate Options
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-lg border border-teal-200 p-4 hover:shadow-md transition-all">
+                  <h5 className="font-medium text-teal-700 mb-2 flex items-center">
+                    <FaPlay className="mr-2 text-teal-600" size={14} />
+                    Single Procedure
+                  </h5>
+                  <p className="text-sm text-teal-600 mb-4">Generate a stored procedure of the selected type.</p>
+                  <button
+                    onClick={generateSP}
+                    className="w-full px-4 py-2 bg-teal-600 text-white rounded-lg 
+                hover:bg-teal-500 transition-all duration-200 
+                flex items-center justify-center font-medium"
+                  >
+                    <FaPlay className="mr-2" size={12} />
+                    Generate {spType.charAt(0).toUpperCase() + spType.slice(1)}
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-lg border border-amber-200 p-4 hover:shadow-md transition-all">
+                  <h5 className="font-medium text-amber-700 mb-2 flex items-center">
+                    <FaSync className="mr-2 text-amber-600" size={14} />
+                    All Procedure Types
+                  </h5>
+                  <p className="text-sm text-amber-600 mb-4">Generate all types of procedures at once.</p>
+                  <button
+                    onClick={generateAllProcedures}
+                    disabled={isCreatingAll}
+                    className="w-full px-4 py-2 bg-amber-600 text-white rounded-lg 
+                hover:bg-amber-500 transition-all duration-200 
+                flex items-center justify-center font-medium disabled:opacity-70"
+                  >
+                    <FaSync className={`mr-2 ${isCreatingAll ? 'animate-spin' : ''}`} size={12} />
+                    {isCreatingAll ? 'Generating...' : 'Generate All Types'}
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-lg border border-blue-200 p-4 hover:shadow-md transition-all">
+                  <h5 className="font-medium text-blue-700 mb-2 flex items-center">
+                    <FaDatabase className="mr-2 text-blue-600" size={14} />
+                    Create in Database
+                  </h5>
+                  <p className="text-sm text-blue-600 mb-4">Create all procedures directly in the database.</p>
+                  <button
+                    onClick={createProceduresInDB}
+                    disabled={isCreatingInDB}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg 
+                hover:bg-blue-500 transition-all duration-200 
+                flex items-center justify-center font-medium disabled:opacity-70"
+                  >
+                    <FaDatabase className={`mr-2 ${isCreatingInDB ? 'animate-pulse' : ''}`} size={12} />
+                    {isCreatingInDB ? 'Creating...' : 'Create in DB'}
+                  </button>
+                </div>
+              </div>
             </div>
           </>
         ) : (
@@ -472,13 +631,15 @@ GO`;
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-medium text-teal-800 text-lg flex items-center">
                 <FaCode className="mr-2 text-orange-500" />
-                Generated SQL
+                {Object.keys(allProcedures).length > 1 ? 'Generated Stored Procedures' : 'Generated Stored Procedure'}
               </h4>
-              <div className="flex space-x-3">
+              <div className="flex space-x-2">
                 <button
                   id="copy-button"
                   onClick={copyToClipboard}
                   className="px-3 py-2 bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-colors flex items-center"
+                  data-tooltip-id="copy-tooltip"
+                  data-tooltip-content="Copy to clipboard"
                 >
                   <FaCopy className="mr-2" />
                   Copy
@@ -486,9 +647,35 @@ GO`;
                 <button
                   onClick={downloadSP}
                   className="px-3 py-2 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors flex items-center"
+                  data-tooltip-id="download-tooltip"
+                  data-tooltip-content="Download current SP"
                 >
                   <FaDownload className="mr-2" />
-                  Download
+                  Download Current
+                </button>
+                {Object.keys(allProcedures).length > 1 && (
+                  <button
+                    onClick={downloadAllProcedures}
+                    className="px-3 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors flex items-center"
+                    data-tooltip-id="download-all-tooltip"
+                    data-tooltip-content="Download all procedures as a single file"
+                  >
+                    <FaFileDownload className="mr-2" />
+                    Download All
+                  </button>
+                )}
+                <button
+                  onClick={createProceduresInDB}
+                  disabled={isCreatingInDB}
+                  className={`px-3 py-2 rounded transition-colors flex items-center
+                ${isCreatingInDB
+                      ? 'bg-blue-200 text-blue-700 cursor-not-allowed'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
+                  data-tooltip-id="create-db-tooltip"
+                  data-tooltip-content="Create in database"
+                >
+                  <FaDatabase className={`mr-2 ${isCreatingInDB ? 'animate-pulse' : ''}`} />
+                  {isCreatingInDB ? 'Creating...' : 'Create in DB'}
                 </button>
               </div>
             </div>
@@ -501,6 +688,10 @@ GO`;
         )}
       </div>
       <Tooltip id="sp-type-tooltip" />
+      <Tooltip id="copy-tooltip" />
+      <Tooltip id="download-tooltip" />
+      <Tooltip id="download-all-tooltip" />
+      <Tooltip id="create-db-tooltip" />
     </div>
   );
 };
