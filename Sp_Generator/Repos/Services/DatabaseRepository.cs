@@ -178,6 +178,46 @@ namespace Sp_Generator.Repos.Services
         }
         #endregion
 
+        #region Create Stored Procedure
+        private string CreateStoredProcedure(string procedureName, string procedureSql)
+        {
+            ValidateConnection();
+
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = new SqlCommand(procedureSql, connection))
+                {
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                        return $"Stored procedure '{procedureName}' created successfully.";
+                    }
+                    catch (Exception ex)
+                    {
+                        return $"Error creating stored procedure '{procedureName}': {ex.Message}";
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Create Multiple Stored Procedures
+        public Dictionary<string, string> CreateStoredProcedures(string tableName, Dictionary<string, string> procedures)
+        {
+            var results = new Dictionary<string, string>();
+
+            foreach (var procedure in procedures)
+            {
+                var procedureName = $"SP_{procedure.Key}_{tableName}";
+                var result = CreateStoredProcedure(procedureName, procedure.Value);
+                results.Add(procedureName, result);
+            }
+
+            return results;
+        }
+        #endregion
+
         #region Helpers
         private void ValidateConnection()
         {
@@ -185,6 +225,8 @@ namespace Sp_Generator.Repos.Services
                 throw new InvalidOperationException("No active database connection");
         }
         #endregion
+
+
     }
 
 }

@@ -9,6 +9,7 @@ import Layout from "../components/layout/Layout";
 import LoadingState from "../components/common/LoadingState";
 import ErrorState from "../components/common/ErrorState";
 import ConnectionStringModal from "../components/common/ConnectionStringModal";
+const API_URL = process.env.REACT_APP_API_URL;
 
 const DatabaseMetadataPage = () => {
   const [metadata, setMetadata] = useState({});
@@ -35,7 +36,7 @@ const DatabaseMetadataPage = () => {
   const fetchMetadata = async (connectionString = null) => {
     setLoading(true);
     try {
-      let url = "http://localhost:61205/api/Database/metadata";
+      let url = `${API_URL}/Database/metadata`;
       let options = {};
       
       if (connectionString) {

@@ -4,6 +4,8 @@ import { FaDatabase, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const ConnectionPage = () => {
   const [connections, setConnections] = useState([]);
   const [newConnectionString, setNewConnectionString] = useState('');
@@ -114,21 +116,35 @@ const ConnectionPage = () => {
     setConnections(updatedConnections);
   };
 
-  const handleConnect =async (connectionString) => {
-    try{
-      const connection = await axios.post('http://localhost:61205/api/Database/connect',{connectionString: connectionString})
-      if (connection.status === 200){
-        console.log(connection.data.message)
+  const handleConnect = async (connectionString) => {
+    try {
+      const connection = await axios.post(`${API_URL}/Database/connect`, { connectionString: connectionString });
+  
+      if (connection.status === 200) {
+        console.log(connection.data.message);
         Swal.fire({
-          title:'Connection established',
-          text:connection.data.message,
+          title: 'Connection established',
+          text: connection.data.message,
+          icon: 'success',
           timer: 2000,
-        })
+        });
         navigate(`/database`);
+      } else {
+        // Handle non-200 status codes
+        Swal.fire({
+          title: 'Connection failed',
+          text: connection.data.message || 'An unexpected error occurred',
+          icon: 'error',
+        });
       }
-    }
-    catch(ex){
-      console.log(ex)
+    } catch (ex) {
+      console.error(ex);
+  
+      Swal.fire({
+        title: 'Error',
+        text: ex.response?.data?.message || 'Unable to connect to the server',
+        icon: 'error',
+      });
     }
   };
 

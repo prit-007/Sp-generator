@@ -1,0 +1,106 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|d:\\github_repos\\sp-generator-tool\\sp_generator\\repos\\services\\databaserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|solutionrelative:repos\\services\\databaserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|d:\\github_repos\\sp-generator-tool\\sp_generator\\repos\\services\\connectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|solutionrelative:repos\\services\\connectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|d:\\github_repos\\sp-generator-tool\\sp_generator\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|d:\\github_repos\\sp-generator-tool\\sp_generator\\controllers\\databasecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|solutionrelative:controllers\\databasecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|d:\\github_repos\\sp-generator-tool\\sp_generator\\controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2F95C6EF-0483-4DD6-8110-D111C7A3304D}|Sp_Generator.csproj|solutionrelative:controllers\\weatherforecastcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ConnectionService.cs",
+              "DocumentMoniker": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Repos\\Services\\ConnectionService.cs",
+              "RelativeDocumentMoniker": "Repos\\Services\\ConnectionService.cs",
+              "ToolTip": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Repos\\Services\\ConnectionService.cs",
+              "RelativeToolTip": "Repos\\Services\\ConnectionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-16T09:58:56.648Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DatabaseRepository.cs",
+              "DocumentMoniker": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Repos\\Services\\DatabaseRepository.cs",
+              "RelativeDocumentMoniker": "Repos\\Services\\DatabaseRepository.cs",
+              "ToolTip": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Repos\\Services\\DatabaseRepository.cs",
+              "RelativeToolTip": "Repos\\Services\\DatabaseRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-16T09:34:06.98Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAAABsAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-16T07:25:26.803Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DatabaseController.cs",
+              "DocumentMoniker": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Controllers\\DatabaseController.cs",
+              "RelativeDocumentMoniker": "Controllers\\DatabaseController.cs",
+              "ToolTip": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Controllers\\DatabaseController.cs",
+              "RelativeToolTip": "Controllers\\DatabaseController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHcAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-16T07:33:58.878Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "WeatherForecastController.cs",
+              "DocumentMoniker": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Controllers\\WeatherForecastController.cs",
+              "RelativeDocumentMoniker": "Controllers\\WeatherForecastController.cs",
+              "ToolTip": "D:\\Github_Repos\\sp-generator-tool\\Sp_Generator\\Controllers\\WeatherForecastController.cs",
+              "RelativeToolTip": "Controllers\\WeatherForecastController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-16T07:24:29.175Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
