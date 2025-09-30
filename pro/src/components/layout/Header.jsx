@@ -1,8 +1,8 @@
 import React from 'react';
-import { FaDatabase, FaSync, FaCog } from 'react-icons/fa';
+import { FaDatabase, FaSync, FaCog, FaLink } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-const Header = ({ onRefresh }) => {
+const Header = ({ onRefresh, onChangeConnection }) => {
   const navigate = useNavigate();
   
   return (
@@ -23,11 +23,11 @@ const Header = ({ onRefresh }) => {
             Refresh
           </button>
           <button 
-            onClick={() => navigate('/')}
+            onClick={onChangeConnection || (() => navigate('/'))}
             className="flex items-center px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition duration-200 shadow-sm"
           >
-            <FaCog className="mr-2" />
-            Connection
+            <FaLink className="mr-2" />
+            Change Connection
           </button>
         </div>
       </div>

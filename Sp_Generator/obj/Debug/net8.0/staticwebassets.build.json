@@ -1,12 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "zyLvN3l8D8t2yHxDdmp7ch7+poqI1r8ik5KPcTUcG+I=",
-  "Source": "Sp_Generator",
-  "BasePath": "_content/Sp_Generator",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": [],
-  "Endpoints": []
-}
+{"Version":1,"Hash":"zyLvN3l8D8t2yHxDdmp7ch7+poqI1r8ik5KPcTUcG+I=","Source":"Sp_Generator","BasePath":"_content/Sp_Generator","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

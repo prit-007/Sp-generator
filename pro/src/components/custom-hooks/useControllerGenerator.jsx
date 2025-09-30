@@ -19,6 +19,10 @@ const useControllerGenerator = (activeTable, metadata, useStronglyTyped, dataAcc
         return csharpType;
     };
     const generateController = useMemo(() => {
+        // Check if we have a table selected and metadata available
+        if (!activeTable || !metadata[activeTable]) {
+            return "// Please select a table to generate the controller";
+        }
 
         const primaryKeys = metadata[activeTable].PrimaryKeys;
 

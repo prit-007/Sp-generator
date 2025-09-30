@@ -1,6 +1,7 @@
 import React from "react";
-import { FaAngleDown, FaKey, FaLink, FaInfoCircle, FaDatabase, FaExclamationTriangle, FaFilter } from "react-icons/fa";
-import { BsFillShieldLockFill, BsCalendar3, BsTextareaT, BsHash } from "react-icons/bs";
+import { motion } from "framer-motion";
+import { FaAngleDown, FaKey, FaLink, FaInfoCircle, FaDatabase, FaExclamationTriangle, FaExpand, FaEye, FaSearch } from "react-icons/fa";
+import { BsCalendar3, BsTextareaT, BsHash, BsTable, BsColumnsGap } from "react-icons/bs";
 
 const TableDetails = ({ activeTable, metadata, expandedColumns, toggleColumnExpand }) => {
   const getDataTypeIcon = (dataType) => {
@@ -41,94 +42,200 @@ const TableDetails = ({ activeTable, metadata, expandedColumns, toggleColumnExpa
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-teal-100">
-      <div className="border-b border-teal-100 bg-gradient-to-r from-teal-50 to-teal-100 px-6 py-4 flex justify-between items-center">
-        <h3 className="font-semibold text-teal-800 text-lg flex items-center">
-          <FaDatabase className="mr-2 text-teal-600" />
-          <span>Table Structure: <span className="text-teal-700 font-bold">{activeTable}</span></span>
-        </h3>
-        
-        <div className="text-sm text-teal-700 flex items-center">
-          <div className="flex items-center mr-3">
-            <div className="h-2 w-2 rounded-full bg-teal-500 mr-1"></div>
-            <span>{columnStats.total} Columns</span>
+    <motion.div 
+      className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-slate-200"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Enhanced Header */}
+      <motion.div 
+        className="bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-700 text-white p-6"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <motion.div 
+              className="p-3 bg-white/20 backdrop-blur-sm rounded-xl"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ duration: 0.3 }}
+            >
+              <BsTable className="text-2xl" />
+            </motion.div>
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
+                Table Structure
+              </h3>
+              <p className="text-teal-200 text-sm mt-1 flex items-center">
+                <BsColumnsGap className="mr-2" />
+                Analyzing structure for <span className="font-bold ml-1 text-white">{activeTable}</span>
+              </p>
+            </div>
           </div>
-          <div className="flex items-center mr-3">
-            <FaKey className="text-amber-500 mr-1" />
-            <span>{columnStats.keys} Keys</span>
-          </div>
-          <div className="flex items-center">
-            <FaLink className="text-blue-500 mr-1" />
-            <span>{columnStats.foreignKeys} Relations</span>
-          </div>
+          
+          <motion.div 
+            className="flex items-center space-x-6"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{columnStats.total}</div>
+              <div className="text-xs text-teal-200 uppercase tracking-wider">Columns</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-amber-300">{columnStats.keys}</div>
+              <div className="text-xs text-teal-200 uppercase tracking-wider">Keys</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-300">{columnStats.foreignKeys}</div>
+              <div className="text-xs text-teal-200 uppercase tracking-wider">Relations</div>
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
       
-      {/* Stats cards */}
-      <div className="grid grid-cols-4 gap-4 p-4 bg-gradient-to-b from-teal-50 to-white">
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-teal-100 flex items-center">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-            <BsHash className="text-blue-500 text-lg" />
+      {/* Enhanced Stats Cards */}
+      <motion.div 
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-gradient-to-br from-slate-50 to-slate-100"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <motion.div 
+          className="bg-white p-4 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-all duration-300"
+          whileHover={{ scale: 1.05, y: -5 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Numeric</div>
+              <div className="text-2xl font-bold text-blue-800">{columnStats.numeric}</div>
+              <div className="text-xs text-slate-500">Number fields</div>
+            </div>
+            <motion.div 
+              className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              <BsHash className="text-blue-600 text-xl" />
+            </motion.div>
           </div>
-          <div>
-            <div className="text-xs text-blue-600 font-medium">Numeric Fields</div>
-            <div className="text-xl font-bold text-blue-800">{columnStats.numeric}</div>
-          </div>
-        </div>
+        </motion.div>
         
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-teal-100 flex items-center">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-            <BsTextareaT className="text-green-500 text-lg" />
+        <motion.div 
+          className="bg-white p-4 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-all duration-300"
+          whileHover={{ scale: 1.05, y: -5 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-green-600 font-bold uppercase tracking-wider mb-1">Text</div>
+              <div className="text-2xl font-bold text-green-800">{columnStats.text}</div>
+              <div className="text-xs text-slate-500">String fields</div>
+            </div>
+            <motion.div 
+              className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              <BsTextareaT className="text-green-600 text-xl" />
+            </motion.div>
           </div>
-          <div>
-            <div className="text-xs text-green-600 font-medium">Text Fields</div>
-            <div className="text-xl font-bold text-green-800">{columnStats.text}</div>
-          </div>
-        </div>
+        </motion.div>
         
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-teal-100 flex items-center">
-          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3">
-            <BsCalendar3 className="text-orange-500 text-lg" />
+        <motion.div 
+          className="bg-white p-4 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-all duration-300"
+          whileHover={{ scale: 1.05, y: -5 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6, duration: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">Date</div>
+              <div className="text-2xl font-bold text-orange-800">{columnStats.date}</div>
+              <div className="text-xs text-slate-500">Time fields</div>
+            </div>
+            <motion.div 
+              className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              <BsCalendar3 className="text-orange-600 text-xl" />
+            </motion.div>
           </div>
-          <div>
-            <div className="text-xs text-orange-600 font-medium">Date Fields</div>
-            <div className="text-xl font-bold text-orange-800">{columnStats.date}</div>
-          </div>
-        </div>
+        </motion.div>
         
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-teal-100 flex items-center">
-          <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-            <FaExclamationTriangle className="text-purple-500 text-lg" />
+        <motion.div 
+          className="bg-white p-4 rounded-xl shadow-lg border border-slate-200 hover:shadow-xl transition-all duration-300"
+          whileHover={{ scale: 1.05, y: -5 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, duration: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1">Nullable</div>
+              <div className="text-2xl font-bold text-purple-800">{columnStats.nullable}</div>
+              <div className="text-xs text-slate-500">Optional fields</div>
+            </div>
+            <motion.div 
+              className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              <FaExclamationTriangle className="text-purple-600 text-xl" />
+            </motion.div>
           </div>
-          <div>
-            <div className="text-xs text-purple-600 font-medium">Nullable Fields</div>
-            <div className="text-xl font-bold text-purple-800">{columnStats.nullable}</div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
       
-      {/* Search and filter area */}
-      <div className="px-4 py-3 border-t border-b border-teal-100 bg-teal-50 flex justify-between items-center">
-        <div className="relative max-w-xs w-full">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <FaFilter className="w-4 h-4 text-teal-500" />
+      {/* Enhanced Search and Filter */}
+      <motion.div 
+        className="bg-gradient-to-r from-teal-50 via-white to-teal-50 px-6 py-4 border-t border-b border-slate-200"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.3 }}
+      >
+        <div className="flex justify-between items-center">
+          <div className="relative max-w-md w-full">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+              <FaSearch className="w-4 h-4 text-teal-500" />
+            </div>
+            <input 
+              type="text"
+              className="border border-teal-200 text-teal-700 text-sm rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 block w-full pl-12 pr-4 py-3 bg-white shadow-sm" 
+              placeholder="Search columns by name or type..."
+            />
           </div>
-          <input 
-            type="text"
-            className="border border-teal-200 text-teal-700 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full pl-10 p-2" 
-            placeholder="Filter columns..."
-          />
+          
+          <div className="flex items-center space-x-3">
+            <motion.button 
+              className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white text-sm py-2 px-4 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaExpand className="text-xs" />
+              <span>Expand All</span>
+            </motion.button>
+            <motion.button 
+              className="bg-white hover:bg-slate-50 text-teal-700 text-sm py-2 px-4 rounded-xl border border-teal-200 font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FaEye className="text-xs" />
+              <span>Collapse All</span>
+            </motion.button>
+          </div>
         </div>
-        
-        <div className="flex items-center">
-          <button className="bg-teal-600 hover:bg-teal-700 text-white text-sm py-2 px-4 rounded-md transition duration-200 ease-in-out flex items-center mr-2">
-            <span>Expand All</span>
-          </button>
-          <button className="bg-white hover:bg-teal-50 text-teal-700 text-sm py-2 px-4 rounded-md border border-teal-200 transition duration-200 ease-in-out flex items-center">
-            <span>Collapse All</span>
-          </button>
-        </div>
-      </div>
+      </motion.div>
       
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-teal-100">
@@ -174,7 +281,7 @@ const TableDetails = ({ activeTable, metadata, expandedColumns, toggleColumnExpa
                           <FaKey className="text-amber-500" title="Primary Key" />
                         </div>
                       </div>
-                    ) : metadata[activeTable].ForeignKeys.some(fk => fk.Column === column.Name) ? (
+                    ) : metadata[activeTable].ForeignKeys.some(fk => fk.ColumnName === column.Name) ? (
                       <div className="flex items-center">
                         <div className="bg-blue-100 rounded-full w-7 h-7 flex items-center justify-center">
                           <FaLink className="text-blue-500" title="Foreign Key" />
@@ -249,7 +356,7 @@ const TableDetails = ({ activeTable, metadata, expandedColumns, toggleColumnExpa
                           <div className="bg-white p-3 rounded-md shadow-sm border border-teal-100">
                             <h5 className="text-xs uppercase text-teal-600 font-semibold mb-2 border-b pb-1 border-teal-100">Relationships</h5>
                             <div className="space-y-2">
-                              {metadata[activeTable].ForeignKeys.some(fk => fk.Column === column.Name) ? (
+                              {metadata[activeTable].ForeignKeys.some(fk => fk.ColumnName === column.Name) ? (
                                 <>
                                   <p className="text-teal-700 flex justify-between">
                                     <span className="font-medium">Foreign Key:</span>
@@ -258,13 +365,13 @@ const TableDetails = ({ activeTable, metadata, expandedColumns, toggleColumnExpa
                                   <p className="text-teal-700 flex justify-between">
                                     <span className="font-medium">References:</span>
                                     <span className="text-blue-600 font-medium">
-                                      {metadata[activeTable].ForeignKeys.find(fk => fk.Column === column.Name).ReferenceTable}
+                                      {metadata[activeTable].ForeignKeys.find(fk => fk.ColumnName === column.Name).ReferencedTable}
                                     </span>
                                   </p>
                                   <p className="text-teal-700 flex justify-between">
                                     <span className="font-medium">Ref Column:</span>
                                     <span className="text-blue-600 font-medium">
-                                      {metadata[activeTable].ForeignKeys.find(fk => fk.Column === column.Name).ReferenceColumn}
+                                      {metadata[activeTable].ForeignKeys.find(fk => fk.ColumnName === column.Name).ReferencedColumn}
                                     </span>
                                   </p>
                                 </>
@@ -309,7 +416,7 @@ const TableDetails = ({ activeTable, metadata, expandedColumns, toggleColumnExpa
         <div>Total: {metadata[activeTable].Columns.length} columns</div>
         <div>Primary Keys: {metadata[activeTable].PrimaryKeys.join(', ') || 'None'}</div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

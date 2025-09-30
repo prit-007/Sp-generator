@@ -20,7 +20,7 @@ const Sidebar = ({
             <h1 className="text-xl font-bold text-white">Database Explorer</h1>
           </div>
           <button 
-            onClick={exportMetadata}
+            on q Click={exportMetadata}
             className="p-2 bg-teal-500 rounded-full text-teal-100 hover:text-white hover:bg-teal-400 transition duration-200" 
             title="Export metadata"
           >

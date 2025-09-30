@@ -14,11 +14,12 @@ const Layout = ({
   activeTable,
   exportMetadata,
   expandedColumns,
-  toggleColumnExpand
+  toggleColumnExpand,
+  onChangeConnection
 }) => {
   return (
     <div className="flex flex-col h-screen">
-      <Header onRefresh={onRefresh} />
+      <Header onRefresh={onRefresh} onChangeConnection={onChangeConnection} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 

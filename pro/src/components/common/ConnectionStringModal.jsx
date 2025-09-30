@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { useConnection } from "../../contexts/ConnectionContext";
 
-const ConnectionStringModal = ({ isOpen, onClose, onConnect }) => {
+const ConnectionStringModal = ({ onClose, onSubmit }) => {
   const [activeTab, setActiveTab] = useState("full");
   const [connectionString, setConnectionString] = useState("");
+  const { connections } = useConnection();
   
   // Component-wise state
   const [server, setServer] = useState("");
@@ -14,6 +15,19 @@ const ConnectionStringModal = ({ isOpen, onClose, onConnect }) => {
   const [password, setPassword] = useState("");
   const [trustServerCertificate, setTrustServerCertificate] = useState(true);
   const [additionalParams, setAdditionalParams] = useState("");
+  const [showRecentConnections, setShowRecentConnections] = useState(false);
+
+  // Add keyboard shortcut (Escape to close)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   // Handle tab change
   const handleTabChange = (tab) => {
@@ -63,9 +77,8 @@ const ConnectionStringModal = ({ isOpen, onClose, onConnect }) => {
     }
 
     try {
-      // Connect using the onConnect prop
-      onConnect(finalConnectionString);
-      onClose();
+      // Connect using the onSubmit prop
+      onSubmit(finalConnectionString);
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -75,8 +88,16 @@ const ConnectionStringModal = ({ isOpen, onClose, onConnect }) => {
       console.error("Error:", error);
     }
   };
-
-  if (!isOpen) return null;
+  
+  // Handle selecting a recent connection
+  const handleSelectRecentConnection = (conn) => {
+    // If the connection is an object (like a full connectionEntry), get just the connectionString property
+    const connectionValue = typeof conn === 'object' && conn.connectionString ? 
+      conn.connectionString : conn;
+      
+    setConnectionString(connectionValue);
+    setShowRecentConnections(false);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -118,14 +139,52 @@ const ConnectionStringModal = ({ isOpen, onClose, onConnect }) => {
               >
                 Enter your SQL Connection String:
               </label>
-              <textarea
-                id="connectionString"
-                value={connectionString}
-                onChange={handleInputChange}
-                placeholder="e.g., Data Source=myServerAddress;Initial Catalog=myDataBase;User Id=myUsername;Password=myPassword;"
-                className="w-full px-4 py-2 border border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                rows="3"
-              />
+              <div className="relative">
+                <textarea
+                  id="connectionString"
+                  value={connectionString}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Data Source=myServerAddress;Initial Catalog=myDataBase;User Id=myUsername;Password=myPassword;"
+                  className="w-full px-4 py-2 border border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  rows="3"
+                />
+                
+                {connections && connections.length > 0 && (
+                  <div className="mt-2">
+                    <button 
+                      type="button"
+                      onClick={() => setShowRecentConnections(!showRecentConnections)}
+                      className="text-sm text-teal-600 hover:text-teal-800 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {showRecentConnections ? 'Hide recent connections' : 'Show recent connections'}
+                    </button>
+                    
+                    {showRecentConnections && connections && (
+                      <div className="mt-2 border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                        {connections.map((conn, index) => {
+                          // Make sure we're handling both string and object connections
+                          const connectionValue = typeof conn === 'object' ? 
+                            JSON.stringify(conn) : conn;
+                            
+                          return (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => handleSelectRecentConnection(connectionValue)}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm truncate border-b border-gray-100 last:border-b-0"
+                            >
+                              {connectionValue}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <p className="mt-2 text-sm text-gray-500">
                 Example: Data Source=PRITS-LEGION;Initial Catalog=RidingApp;Integrated Security=true;TrustServerCertificate=True
               </p>
@@ -249,7 +308,6 @@ const ConnectionStringModal = ({ isOpen, onClose, onConnect }) => {
             <button
               type="submit"
               className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition duration-200"
-              onClick={handleSubmit}
             >
               Connect
             </button>
