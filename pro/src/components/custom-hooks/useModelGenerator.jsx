@@ -20,12 +20,17 @@ const useModelGenerator  = (activeTable, metadata, useStronglyTyped, dataAccessT
       };
     
       const generateModel = useMemo(() => {
+            // Check if we have a table selected and metadata available
+            if (!activeTable || !metadata[activeTable]) {
+                return "// Please select a table to generate the model";
+            }
+            
             // Check if we have primary keys
-            const primaryKeys = metadata[activeTable].PrimaryKeys;
+            const primaryKeys = metadata[activeTable].PrimaryKeys || [];
             const hasCompositeKey = primaryKeys.length > 1;
         
             // Get all the foreign keys for the table
-            const foreignKeys = metadata[activeTable].ForeignKeys;
+            const foreignKeys = metadata[activeTable].ForeignKeys || [];
             
             let modelCode = `using System;
         using System.Collections.Generic;

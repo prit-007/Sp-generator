@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTable, FaCode, FaKey, FaColumns, FaInfoCircle, FaFileCode } from 'react-icons/fa';
 import TableDetails from '../database/TableDetails';
 import ForeignKeysTable from '../database/ForeignKeysTable';
@@ -12,7 +12,20 @@ const MainContent = ({
   expandedColumns,
   toggleColumnExpand
 }) => {
-  const [activeTab, setActiveTab] = useState('columns');
+  // Persist activeTab in localStorage to maintain it across table changes
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem('activeTab');
+    return savedTab || 'columns';
+  });
+
+  // Save activeTab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('activeTab', activeTab);
+  }, [activeTab]);
+
+  const handleBackToEditor = () => {
+    setActiveTab('columns');
+  };
 
   if (!activeTable) {
     return <EmptyState />;
@@ -127,6 +140,7 @@ const MainContent = ({
             <MvcGenerator
               activeTable={activeTable}
               metadata={metadata}
+              onBackToEditor={handleBackToEditor}
             />
           )}
         </div>

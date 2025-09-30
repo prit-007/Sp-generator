@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Sp_Generator.Repos.Services;
-using System.Collections.Generic;
+using Sp_Generator.Models;
+using Sp_Generator.Models.ValidationAttributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sp_Generator.Controllers
 {
@@ -18,94 +20,111 @@ namespace Sp_Generator.Controllers
 
         #region POST connect
         [HttpPost("connect")]
-        public IActionResult Connect([FromBody] ConnectionRequest request)
+        public async Task<IActionResult> Connect([FromBody] ConnectionRequest request)
         {
-            if (request == null || string.IsNullOrEmpty(request.ConnectionString))
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Connection string is required.");
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed",
+                    Errors = errors
+                });
             }
 
-            try
+            using (var connection = new SqlConnection(request.ConnectionString))
             {
-                using (var connection = new SqlConnection(request.ConnectionString))
+                await connection.OpenAsync();
+
+                // Get server and database information
+                var serverVersionCommand = new SqlCommand("SELECT @@VERSION", connection);
+                var databaseNameCommand = new SqlCommand("SELECT DB_NAME()", connection);
+
+                var serverVersion = (await serverVersionCommand.ExecuteScalarAsync())?.ToString();
+                var databaseName = (await databaseNameCommand.ExecuteScalarAsync())?.ToString();
+
+                _repository.SetConnectionString(request.ConnectionString);
+
+                return Ok(new ApiResponse<ConnectionResponse>
                 {
-                    connection.Open();
-                    using (var command = new SqlCommand("SELECT 1 AS Test", connection))
+                    Success = true,
+                    Message = "Connected to the database successfully.",
+                    Data = new ConnectionResponse
                     {
-                        var result = command.ExecuteScalar();
-                        if (result != null && result.ToString() == "1")
-                        {
-                            _repository.SetConnectionString(request.ConnectionString);
-                            return Ok(new { message = "Connected to the database successfully." });
-                        }
-                        else
-                        {
-                            return StatusCode(500, new { error = "Failed to verify connection." });
-                        }
+                        IsConnected = true,
+                        Message = "Connection established successfully",
+                        ServerVersion = serverVersion,
+                        DatabaseName = databaseName
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Failed to connect to the database.", details = ex.Message });
+                });
             }
         }
         #endregion
 
         #region GET table names
         [HttpGet("tables")]
-        public IActionResult GetTableNames()
+        public async Task<IActionResult> GetTableNames()
         {
-            try
+            var tableNames = await _repository.GetTableNamesAsync();
+            return Ok(new ApiResponse<List<string>>
             {
-                var tableNames = _repository.GetTableNames();
-                return Ok(tableNames);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Failed to fetch table names.", details = ex.Message });
-            }
+                Success = true,
+                Message = "Table names retrieved successfully.",
+                Data = tableNames
+            });
         }
         #endregion
 
         #region GET full database metadata
         [HttpGet("metadata")]
-        public IActionResult GetDatabaseMetadata()
+        public async Task<IActionResult> GetDatabaseMetadata()
         {
-            try
+            var metadata = await _repository.GetDatabaseMetadataAsync();
+            return Ok(new ApiResponse<object>
             {
-                var metadata = _repository.GetDatabaseMetadata();
-                return Ok(metadata);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Failed to fetch database metadata.", details = ex.Message });
-            }
+                Success = true,
+                Message = "Database metadata retrieved successfully.",
+                Data = metadata
+            });
         }
         #endregion
 
         #region GET metadata for a specific table
         [HttpGet("metadata/{tableName}")]
-        public IActionResult GetTableMetadata(string tableName)
+        public async Task<IActionResult> GetTableMetadata([TableNameValidation] string tableName)
         {
-            if (string.IsNullOrEmpty(tableName))
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Table name is required.");
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Invalid table name",
+                    Errors = errors
+                });
             }
 
-            try
+            var metadata = await _repository.GetTableMetadataAsync(tableName);
+            return Ok(new ApiResponse<object>
             {
-                var metadata = _repository.GetTableMetadata(tableName);
-                return Ok(metadata);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Failed to fetch table metadata.", details = ex.Message });
-            }
+                Success = true,
+                Message = $"Metadata for table '{tableName}' retrieved successfully.",
+                Data = metadata
+            });
         }
         #endregion
 
         #region POST create stored procedures
+<<<<<<< HEAD
 
         [HttpPost("create-stored-procedures")]
         public IActionResult CreateStoredProcedures([FromBody] CreateStoredProceduresRequest request)
@@ -129,5 +148,48 @@ namespace Sp_Generator.Controllers
     public class ConnectionRequest
     {
         public string ConnectionString { get; set; }
+=======
+        [HttpPost("create-stored-procedures")]
+        public async Task<IActionResult> CreateStoredProcedures([FromBody] CreateStoredProceduresRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed",
+                    Errors = errors
+                });
+            }
+
+            var results = await _repository.CreateStoredProceduresAsync(request.TableName, request.Procedures);
+
+            var procedureResults = results.Select(r => new StoredProcedureResult
+            {
+                ProcedureName = r.Key,
+                Success = !r.Value.Contains("Error"),
+                Message = r.Value,
+                ErrorDetails = r.Value.Contains("Error") ? r.Value : null
+            }).ToList();
+
+            var hasErrors = procedureResults.Any(r => !r.Success);
+
+            return Ok(new ApiResponse<List<StoredProcedureResult>>
+            {
+                Success = !hasErrors,
+                Message = hasErrors
+                    ? "Some stored procedures failed to create"
+                    : "All stored procedures created successfully",
+                Data = procedureResults
+            });
+        }
+        #endregion
+
+>>>>>>> draft-2
     }
 }

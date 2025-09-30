@@ -46,8 +46,12 @@
               "RelativeToolTip": "Repos\\Services\\ConnectionService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+<<<<<<< HEAD
               "WhenOpened": "2025-02-16T09:58:56.648Z",
               "EditorCaption": ""
+=======
+              "WhenOpened": "2025-02-16T09:58:56.648Z"
+>>>>>>> draft-2
             },
             {
               "$type": "Document",
