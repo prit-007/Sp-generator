@@ -8,6 +8,7 @@ import MvcGeneratorPage from '../pages/MvcGeneratorPage';
 import AnalyticsPage from '../pages/AnalyticsPage';
 import DiagramPage from '../pages/DiagramPage';
 import TableDetailsPanel from '../database/TableDetailsPanel';
+import Breadcrumbs from '../common/Breadcrumbs';
 
 const NewLayout = ({
   metadata,
@@ -45,6 +46,46 @@ const NewLayout = ({
     }
   }, [activeTable, setActivePage]);
   
+  // Generate breadcrumb items based on the active page and table
+  const getBreadcrumbItems = () => {
+    const baseBreadcrumbs = [
+      { label: 'Home', icon: 'home', path: 'overview' }
+    ];
+    
+    // Add Database item
+    baseBreadcrumbs.push({ label: 'Database', icon: 'database', path: 'database-explorer' });
+    
+    // Add Table item if a table is active
+    if (activeTable) {
+      baseBreadcrumbs.push({ label: activeTable, icon: 'table', path: 'table-details' });
+    }
+    
+    // Add page-specific breadcrumb
+    switch(activePage) {
+      case 'overview':
+        return [{ label: 'Dashboard', icon: 'home', path: 'overview' }];
+      case 'database-explorer':
+        return [...baseBreadcrumbs.slice(0, 2)];
+      case 'stored-procedures':
+        return [...baseBreadcrumbs, { label: 'Stored Procedures', icon: 'code', path: 'stored-procedures' }];
+      case 'mvc-generator':
+        return [...baseBreadcrumbs, { label: 'MVC Generator', icon: 'file', path: 'mvc-generator' }];
+      case 'analytics':
+        return [...baseBreadcrumbs, { label: 'Analytics', icon: 'chart', path: 'analytics' }];
+      case 'diagram':
+        return [...baseBreadcrumbs.slice(0, 2), { label: 'Database Diagram', icon: 'diagram', path: 'diagram' }];
+      case 'table-details':
+        return [...baseBreadcrumbs];
+      default:
+        return baseBreadcrumbs;
+    }
+  };
+  
+  // Handle breadcrumb navigation
+  const handleBreadcrumbNavigation = (path) => {
+    setActivePage(path);
+  };
+
   const renderMainContent = () => {
     switch(activePage) {
       case 'overview':
@@ -221,7 +262,18 @@ const NewLayout = ({
       
       {/* Main Content */}
       <div className="flex-1 overflow-hidden bg-gray-50">
-        {renderMainContent()}
+        <div className="p-4">
+          {/* Breadcrumbs */}
+          <Breadcrumbs 
+            items={getBreadcrumbItems()} 
+            onNavigate={handleBreadcrumbNavigation}
+          />
+          
+          {/* Main content with adjusted spacing to accommodate breadcrumbs */}
+          <div className="mt-1">
+            {renderMainContent()}
+          </div>
+        </div>
       </div>
     </div>
   );

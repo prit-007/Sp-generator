@@ -1,11 +1,10 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import './App.css';
 // Pages
 import DatabaseMetadataPage from './pages/DatabaseMetadataPage';
 import ConnectionPage from './pages/ConnectionPage';
 import NotFoundPage from './pages/NotFoundPage';
-import WelcomePage from './pages/WelcomePage';
 import LandingPage from './pages/LandingPage';
 import Settings from './pages/Settings';
 // Error Boundary
@@ -15,32 +14,13 @@ import { ErrorProvider } from './contexts/ErrorContext';
 import { ConnectionProvider, useConnection } from './contexts/ConnectionContext';
 
 function App() {
-  const [showWelcome, setShowWelcome] = useState(true);
-  
-  useEffect(() => {
-    // Check if the user has already visited the app
-    const hasVisited = localStorage.getItem('sp-generator-visited');
-    if (hasVisited) {
-      setShowWelcome(false);
-    }
-  }, []);
-  
-  const handleStartApp = () => {
-    // Mark as visited in localStorage
-    localStorage.setItem('sp-generator-visited', 'true');
-    setShowWelcome(false);
-  };
-
-  // If showing welcome page, render it instead of the router
-  if (showWelcome) {
-    return <WelcomePage onStart={handleStartApp} />;
-  }
-
   return (
     <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
       <ErrorProvider>
         <ConnectionProvider>
-          <AppRoutes />
+          <Router>
+            <AppRoutes />
+          </Router>
         </ConnectionProvider>
       </ErrorProvider>
     </ErrorBoundary>
@@ -70,6 +50,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // Create a connection redirect component to handle redirection when connection exists
+// We're not forcing redirection anymore to allow for connection changes
 const ConnectionRedirect = ({ children }) => {
   const { activeConnection, isLoading } = useConnection();
   
@@ -83,10 +64,8 @@ const ConnectionRedirect = ({ children }) => {
     </div>;
   }
   
-  // If there's already an active connection, redirect to database page
-  if (activeConnection) {
-    return <Navigate to="/database" replace />;
-  }
+  // We removed the redirect to allow users to change connections
+  // if they want to, even with an active connection
   
   return children;
 };
@@ -100,43 +79,35 @@ const AppRoutes = () => {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        {/* Landing page - redirect to connect page if needed */}
-        <Route path="/" element={
-          <ConnectionRedirect>
-            <Navigate to="/connect" replace />
-          </ConnectionRedirect>
-        } />
-        
-        {/* Landing page content */}
-        <Route path="/welcome" element={<LandingPage />} />
+    <Routes>
+      {/* Landing page - Enhanced landing page */}
+      <Route path="/" element={<LandingPage />} />
+      
+      {/* Connection page */}
+      <Route path="/connect" element={
+        <ConnectionRedirect>
+          <ConnectionPage />
+        </ConnectionRedirect>
+      } />
 
-        {/* Connection page - redirect to database if already connected */}
-        <Route path="/connect" element={
-          <ConnectionRedirect>
-            <ConnectionPage />
-          </ConnectionRedirect>
-        } />
+      {/* Database explorer with all functionality - protected route */}
+      <Route path="/database/*" element={
+        <ProtectedRoute>
+          <DatabaseMetadataPage />
+        </ProtectedRoute>
+      } />
+      
+      {/* Settings page */}
+      <Route path="/settings" element={<Settings />} />
 
-        {/* Database explorer with all functionality - protected route */}
-        <Route path="/database/*" element={
-          <ProtectedRoute>
-            <DatabaseMetadataPage />
-          </ProtectedRoute>
-        } />
-        
-        {/* Settings page */}
-        <Route path="/settings" element={<Settings />} />
+      {/* Redirect legacy routes if any */}
+      <Route path="/welcome" element={<Navigate to="/" replace />} />
+      <Route path="/explorer" element={<Navigate to="/database" replace />} />
+      <Route path="/sp-generator" element={<Navigate to="/database" replace />} />
 
-        {/* Redirect legacy routes if any */}
-        <Route path="/explorer" element={<Navigate to="/database" replace />} />
-        <Route path="/sp-generator" element={<Navigate to="/database" replace />} />
-
-        {/* 404 page */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Router>
+      {/* 404 page */}
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
 

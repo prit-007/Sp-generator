@@ -1,17 +1,34 @@
 @import "tailwindcss";
 
+:root {
+  --font-primary: 'Poppins', sans-serif;
+  --font-secondary: 'Montserrat', sans-serif;
+  --font-title: 'Orbitron', sans-serif;
+  --font-accent: 'Raleway', sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-secondary);
+}
+
+.font-title {
+  font-family: var(--font-title);
+}
+
+.font-accent {
+  font-family: var(--font-accent);
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
 }
 
 /* Custom scrollbar styles for a modern look */

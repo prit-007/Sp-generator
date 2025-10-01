@@ -21,6 +21,7 @@ import LoadingState from "../components/common/LoadingState";
 import ErrorState from "../components/common/ErrorState";
 import ComponentErrorBoundary from "../components/common/ComponentErrorBoundary";
 import ConnectionStringModal from "../components/common/ConnectionStringModal";
+import ActiveConnectionBanner from "../components/common/ActiveConnectionBanner";
 
 // New Layout Components
 import NewHeader from "../components/layout/NewHeader";
@@ -47,7 +48,9 @@ const DatabaseMetadataPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showTableInfo, setShowTableInfo] = useState(true);
   const [columnSort, setColumnSort] = useState({ field: 'Name', direction: 'asc' });
+  const [initialLoading, setInitialLoading] = useState(true);
   const [isTableLoading, setIsTableLoading] = useState(false);
+  const [showConnectionBanner, setShowConnectionBanner] = useState(true);
   const [filterOptions, setFilterOptions] = useState({
     showPrimaryKeys: true,
     showNonPrimaryKeys: true,
@@ -94,6 +97,7 @@ const DatabaseMetadataPage = () => {
     if (!activeConnection) {
       toast.warn("No active connection. Please connect to a database first.");
       setIsRefreshing(false);
+      setInitialLoading(false);
       return;
     }
     
@@ -138,6 +142,7 @@ const DatabaseMetadataPage = () => {
     );
     
     setIsRefreshing(false);
+    setInitialLoading(false);
   };
   
   // Load metadata on initial render
@@ -348,8 +353,12 @@ const DatabaseMetadataPage = () => {
     </motion.div>
   );
 
-  if (isLoading && !isRefreshing) {
-    return <LoadingState message="Loading database metadata..." />;
+  if (isLoading || initialLoading) {
+    return <LoadingState 
+      message="Loading database metadata..." 
+      description="Please wait while we fetch your database structure..."
+      type="database"
+    />;
   }
 
   if (error && !isRefreshing) {
@@ -370,6 +379,11 @@ const DatabaseMetadataPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <ToastContainer position="top-right" autoClose={5000} />
+      
+      {/* Active Connection Banner */}
+      {showConnectionBanner && (
+        <ActiveConnectionBanner onClose={() => setShowConnectionBanner(false)} />
+      )}
       
       {/* Fixed Header */}
       <div className="sticky top-0 left-0 right-0 z-50 shadow-md">

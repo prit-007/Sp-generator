@@ -36,16 +36,28 @@ SP Generator is a powerful web application crafted to transform how developers c
 
 ### Frontend
 - **Core Framework**: React 18+
+- **Routing**: React Router v6
 - **HTTP Client**: Axios
 - **UI Components**: Tailwind CSS with custom component library
+- **Animations**: Framer Motion
+- **Icons**: React Icons
 
 ### Backend
-- **.NET Core**: 7.0+
-- **ORM**: Entity Framework Core
-- **Database Providers**: Multiple adapters for various database systems
-- **Authentication**: ASP.NET Core Identity with JWT
+- **.NET Core**: 8.0+
+- **Database Connectivity**: Microsoft.Data.SqlClient
+- **Database Exploration**: SQL Server Management Objects (SMO)
+- **Error Handling**: Global exception middleware
 - **Documentation**: Swagger/OpenAPI
-- **Testing**: xUnit with NSubstitute
+
+## Project Structure
+
+The SP Generator project is organized into two main components:
+
+### `/pro` - Frontend React Application
+Contains the React frontend application that provides the user interface for the SP Generator tool.
+
+### `/Sp_Generator` - Backend .NET API
+Houses the ASP.NET Core API that handles database connections, queries, and stored procedure generation.
 
 ### DevOps & Tools
 - **Version Control**: Git
@@ -192,7 +204,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Updates**: Star the repository to receive notifications
 
 ---
-
-<p align="center">
-  <i>Elevating database development, one stored procedure at a time.</i>
-</p>

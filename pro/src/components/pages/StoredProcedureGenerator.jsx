@@ -14,6 +14,7 @@ import { Tooltip } from 'react-tooltip';
 import useClipboardAndDownload from '../custom-hooks/useClipboardAndDownload';
 
 const StoredProcedureGenerator = ({ metadata, activeTable, setActivePage }) => {
+  // Clipboard and download functionality initialized below
   // Create a workaround for setActivePage if it's not provided as a prop
   const navigateToPage = (page) => {
     if (typeof setActivePage === 'function') {
@@ -77,7 +78,7 @@ const StoredProcedureGenerator = ({ metadata, activeTable, setActivePage }) => {
   const [currentTutorialStep, setCurrentTutorialStep] = useState(1);
   const [hasInteracted, setHasInteracted] = useState(false);
   
-  const { copyToClipboard, downloadAsFile } = useClipboardAndDownload();
+  const { copyToClipboard, downloadAsFile, downloadAsZip } = useClipboardAndDownload(activeTable);
 
   // Function to render the tutorial panel
   const renderTutorialPanel = () => {
@@ -572,6 +573,169 @@ const StoredProcedureGenerator = ({ metadata, activeTable, setActivePage }) => {
   const handleSpTypeChange = (type) => {
     setSpType(type);
     setGeneratedSP('');
+    setShowPreview(false);
+    
+    // If CRUD type is selected, automatically generate all procedures
+    if (type === 'crud') {
+      generateAllCrudProcedures();
+    }
+  };
+  
+  // Function to generate all CRUD procedures
+  const generateAllCrudProcedures = () => {
+    if (!activeTable || !metadata[activeTable]) {
+      setError('No table selected or metadata not available');
+      return;
+    }
+    
+    setIsGenerating(true);
+    setError('');
+    
+    try {
+      // Generate all four procedure types
+      const selectSP = generateProcedure('select');
+      const insertSP = generateProcedure('insert');
+      const updateSP = generateProcedure('update');
+      const deleteSP = generateProcedure('delete');
+      
+      // Combine all procedures with separators
+      const allProcedures = [
+        '-- SELECT Procedure', selectSP, '\nGO\n',
+        '-- INSERT Procedure', insertSP, '\nGO\n',
+        '-- UPDATE Procedure', updateSP, '\nGO\n',
+        '-- DELETE Procedure', deleteSP
+      ].join('\n');
+      
+      setGeneratedSP(allProcedures);
+      setShowPreview(true);
+      
+      // Store individual procedures for possible separate downloads
+      setAllProcedures({
+        select: selectSP,
+        insert: insertSP,
+        update: updateSP,
+        delete: deleteSP
+      });
+      
+      toast.success('All CRUD procedures generated successfully!');
+    } catch (err) {
+      console.error('Error generating CRUD procedures:', err);
+      setError(`Error generating CRUD procedures: ${err.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  // Helper function to generate a single procedure based on type
+  const generateProcedure = (procType) => {
+    const tableInfo = metadata[activeTable];
+    const allColumns = tableInfo.Columns.map(col => col.Name);
+    const primaryKeys = tableInfo.PrimaryKeys || [];
+    
+    let procedureName = '';
+    let sql = '';
+    
+    switch(procType) {
+      case 'select':
+        procedureName = `sp_Get${activeTable}`;
+        sql = `CREATE PROCEDURE [dbo].[${procedureName}]\n`;
+        
+        if (primaryKeys.length > 0) {
+          primaryKeys.forEach((pk, idx) => {
+            const column = tableInfo.Columns.find(col => col.Name === pk);
+            if (column) {
+              sql += `    @${pk} ${column.Type}${column.MaxLength ? `(${column.MaxLength})` : ''}${idx < primaryKeys.length - 1 ? ',\n' : ''}\n`;
+            }
+          });
+        }
+        
+        sql += `AS\nBEGIN\n    SET NOCOUNT ON;\n\n    SELECT ${allColumns.join(',\n           ')}\n    FROM [dbo].[${activeTable}]`;
+        
+        if (primaryKeys.length > 0) {
+          sql += `\n    WHERE ${primaryKeys.map(pk => `${pk} = @${pk}`).join('\n      AND ')}`;  
+        }
+        
+        sql += `\nEND`;
+        break;
+        
+      case 'insert':
+        procedureName = `sp_Insert${activeTable}`;
+        sql = `CREATE PROCEDURE [dbo].[${procedureName}]\n`;
+        
+        // Add parameters for all columns except identity columns
+        const insertColumns = tableInfo.Columns
+          .filter(col => !col.IsIdentity)
+          .map(col => col.Name);
+        
+        insertColumns.forEach((colName, idx) => {
+          const column = tableInfo.Columns.find(col => col.Name === colName);
+          if (column) {
+            sql += `    @${colName} ${column.Type}${column.MaxLength ? `(${column.MaxLength})` : ''}${idx < insertColumns.length - 1 ? ',\n' : '\n'}`;  
+          }
+        });
+        
+        sql += `AS\nBEGIN\n    SET NOCOUNT ON;\n\n    INSERT INTO [dbo].[${activeTable}] (\n        ${insertColumns.join(',\n        ')}\n    ) VALUES (\n        ${insertColumns.map(col => `@${col}`).join(',\n        ')}\n    )\n`;
+        
+        if (primaryKeys.length > 0) {
+          sql += `\n    -- Return the new record ID if there's a primary key\n    SELECT ${primaryKeys.join(', ')} FROM [dbo].[${activeTable}] WHERE ${primaryKeys.map(pk => `${pk} = SCOPE_IDENTITY()`).join(' AND ')}`;
+        }
+        
+        sql += `\nEND`;
+        break;
+        
+      case 'update':
+        procedureName = `sp_Update${activeTable}`;
+        sql = `CREATE PROCEDURE [dbo].[${procedureName}]\n`;
+        
+        // Add parameters for all columns
+        allColumns.forEach((colName, idx) => {
+          const column = tableInfo.Columns.find(col => col.Name === colName);
+          if (column) {
+            sql += `    @${colName} ${column.Type}${column.MaxLength ? `(${column.MaxLength})` : ''}${idx < allColumns.length - 1 ? ',\n' : '\n'}`;  
+          }
+        });
+        
+        sql += `AS\nBEGIN\n    SET NOCOUNT ON;\n\n    UPDATE [dbo].[${activeTable}]\n    SET ${allColumns.filter(col => !primaryKeys.includes(col)).map(col => `${col} = @${col}`).join(',\n        ')}`;
+        
+        if (primaryKeys.length > 0) {
+          sql += `\n    WHERE ${primaryKeys.map(pk => `${pk} = @${pk}`).join('\n      AND ')}`;  
+        } else {
+          sql += `\n    WHERE 1=1 -- WARNING: No primary key defined, will update all rows!`;
+        }
+        
+        sql += `\nEND`;
+        break;
+        
+      case 'delete':
+        procedureName = `sp_Delete${activeTable}`;
+        sql = `CREATE PROCEDURE [dbo].[${procedureName}]\n`;
+        
+        // Add parameters for primary keys
+        if (primaryKeys.length > 0) {
+          primaryKeys.forEach((pk, idx) => {
+            const column = tableInfo.Columns.find(col => col.Name === pk);
+            if (column) {
+              sql += `    @${pk} ${column.Type}${column.MaxLength ? `(${column.MaxLength})` : ''}${idx < primaryKeys.length - 1 ? ',\n' : '\n'}`;  
+            }
+          });
+        }
+        
+        sql += `AS\nBEGIN\n    SET NOCOUNT ON;\n\n    DELETE FROM [dbo].[${activeTable}]`;
+        
+        if (primaryKeys.length > 0) {
+          sql += `\n    WHERE ${primaryKeys.map(pk => `${pk} = @${pk}`).join('\n      AND ')}`;  
+        } else {
+          sql += `\n    WHERE 1=1 -- WARNING: No primary key defined, will delete all rows!`;
+        }
+        
+        sql += `\nEND`;
+        break;
+        
+      default:
+        throw new Error(`Unknown procedure type: ${procType}`);
+    }
+    
+    return sql;
   };
 
   const handleColumnToggle = (columnName) => {
@@ -1343,6 +1507,7 @@ ${sql}`;
 
   return (
     <div className="h-full flex flex-col">
+      
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-teal-600 to-cyan-600 opacity-90"></div>
         <div className="absolute -left-20 -top-20 w-96 h-96 bg-gradient-to-br from-white/5 to-white/2 rounded-full filter blur-3xl opacity-30"></div>
@@ -1926,6 +2091,29 @@ ${sql}`;
                       >
                         <FaDownload />
                       </button>
+                      
+                      {/* ZIP download button (only for CRUD mode) */}
+                      {spType === 'crud' && Object.keys(allProcedures).length === 4 && (
+                        <button
+                          className="p-2 text-gray-500 hover:text-purple-600 rounded-md"
+                          onClick={() => {
+                            // Prepare files for ZIP
+                            const files = {
+                              [`${activeTable}_Select.sql`]: allProcedures.select,
+                              [`${activeTable}_Insert.sql`]: allProcedures.insert,
+                              [`${activeTable}_Update.sql`]: allProcedures.update,
+                              [`${activeTable}_Delete.sql`]: allProcedures.delete
+                            };
+                            
+                            // Use the downloadAsZip function directly
+                            downloadAsZip(files, `${activeTable}_StoredProcedures.zip`);
+                            toast.success(`Downloaded all ${activeTable} stored procedures as ZIP!`);
+                          }}
+                          title="Download all procedures as ZIP"
+                        >
+                          <FaFileDownload />
+                        </button>
+                      )}
                     </>
                   )}
                 </div>

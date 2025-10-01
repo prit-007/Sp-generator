@@ -263,8 +263,6 @@ namespace Sp_Generator.Repos.Services
                 }
             }
         }
-<<<<<<< HEAD
-=======
 
         private async Task<string> CreateStoredProcedureAsync(string procedureName, string procedureSql)
         {
@@ -287,7 +285,6 @@ namespace Sp_Generator.Repos.Services
                 }
             }
         }
->>>>>>> draft-2
         #endregion
 
         #region Create Multiple Stored Procedures
@@ -304,8 +301,6 @@ namespace Sp_Generator.Repos.Services
 
             return results;
         }
-<<<<<<< HEAD
-=======
 
         public async Task<Dictionary<string, string>> CreateStoredProceduresAsync(string tableName, Dictionary<string, string> procedures)
         {
@@ -415,7 +410,6 @@ namespace Sp_Generator.Repos.Services
             }
             return foreignKeys;
         }
->>>>>>> draft-2
         #endregion
 
         #region Helpers

@@ -9,7 +9,7 @@ import { BsDiagram3Fill } from 'react-icons/bs';
 import { useConnection } from '../../contexts/ConnectionContext';
 
 const NewHeader = ({ onRefresh, onChangeConnection, onExport, activePage, setActivePage }) => {
-  const { activeConnection, connections, clearConnections, setConnection } = useConnection();
+  const { activeConnection, connections, clearConnections, setConnection, clearActiveConnection } = useConnection();
   const [showConnectionHistory, setShowConnectionHistory] = useState(false);
   
   // Helper to truncate connection string for display
@@ -50,16 +50,21 @@ const NewHeader = ({ onRefresh, onChangeConnection, onExport, activePage, setAct
           <div className="flex items-center">
             <Link to="/">
               <motion.div 
-                className="text-3xl font-bold mr-2"
+                className="font-title text-4xl font-bold mr-2 tracking-wider"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                style={{ 
+                  textShadow: '0 2px 4px rgba(0,0,0,0.2)', 
+                  filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.15))' 
+                }}
               >
                 <span className="text-white">SP</span>
-                <span className="text-yellow-300">Generator</span>
+                <span className="text-yellow-300 italic">Generator</span>
+                <span className="text-teal-200 text-sm ml-1 align-top font-light">®</span>
               </motion.div>
             </Link>
-            <span className="hidden md:inline-block text-teal-200 text-sm font-light">
-              Database Toolkit
+            <span className="hidden md:inline-block text-teal-200 text-sm font-accent italic ml-2">
+              Professional Database Toolkit
             </span>
           </div>
 
@@ -160,13 +165,16 @@ const NewHeader = ({ onRefresh, onChangeConnection, onExport, activePage, setAct
             )}
             
             <motion.button
-              onClick={onChangeConnection}
-              className="p-2 rounded-full bg-yellow-500 hover:bg-yellow-400 text-teal-800"
+              onClick={() => {
+                clearActiveConnection();
+                window.location.href = '/connect';
+              }}
+              className="p-2 rounded-full bg-red-500 hover:bg-red-400 text-white"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              title="Change connection"
+              title="Disconnect and go to connection page"
             >
-              <FaCog className="text-lg" />
+              <FaSignOutAlt className="text-lg" />
             </motion.button>
           </div>
         </div>

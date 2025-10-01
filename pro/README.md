@@ -1,8 +1,16 @@
-# Getting Started with Create React App
+# SP Generator Pro - Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
+SP Generator Pro's frontend is a React application that provides a powerful user interface for working with SQL Server databases. It's designed to streamline the process of generating stored procedures, exploring database schemas, and facilitating database development workflows.
 
-## Available Scripts
+## Features
+- **Database Connection**: Securely connect to SQL Server databases
+- **Database Schema Explorer**: Browse tables, views, and procedures with an intuitive interface
+- **Stored Procedure Generator**: Auto-generate optimized CRUD stored procedures
+- **MVC Generator**: Create ASP.NET MVC controllers and views based on your database
+- **Model Generator**: Auto-generate C# model classes from database tables
+
+## Getting Started
 
 In the project directory, you can run:
 
@@ -10,9 +18,6 @@ In the project directory, you can run:
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
 ### `npm test`
 

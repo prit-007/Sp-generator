@@ -25,6 +25,7 @@ import { useConnection } from '../contexts/ConnectionContext';
 const ConnectionPage = () => {
   // State management
   const [connections, setConnections] = useState([]);
+  const [showActiveConnectionBanner, setShowActiveConnectionBanner] = useState(true);
   const [newConnectionString, setNewConnectionString] = useState('');
   const [connectionName, setConnectionName] = useState('');
   const [editIndex, setEditIndex] = useState(-1);
@@ -62,7 +63,7 @@ const ConnectionPage = () => {
   const navigate = useNavigate();
   const { handleAsync, error, isLoading, clearError } = useErrorHandler();
   const { copyToClipboard } = useClipboardAndDownload();
-  const { setConnection } = useConnection();
+  const { activeConnection, setConnection, clearActiveConnection } = useConnection();
 
   // Tooltip helper function
   const renderTooltip = (id, text) => (
@@ -488,8 +489,44 @@ const ConnectionPage = () => {
   // Render
   return (
     <ComponentErrorBoundary>
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar removed - required props not available in this context */}
+      <div className="flex flex-col h-screen overflow-hidden">
+        {/* Active Connection Banner */}
+        {activeConnection && showActiveConnectionBanner && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4"
+          >
+            <div className="max-w-screen-xl mx-auto flex justify-between items-center">
+              <div className="flex items-center">
+                <FaLink className="mr-3 text-xl" />
+                <div>
+                  <h2 className="text-lg font-semibold">Active Connection</h2>
+                  <p className="text-sm text-blue-100 truncate max-w-md">{activeConnection}</p>
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    clearActiveConnection();
+                    toast.success("Connection cleared successfully");
+                  }}
+                  className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-150"
+                >
+                  Disconnect
+                </button>
+                <button
+                  onClick={() => setShowActiveConnectionBanner(false)}
+                  className="bg-blue-600/40 hover:bg-blue-700/40 text-white p-2 rounded-md transition-colors duration-150"
+                >
+                  <FaTimesCircle />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        {/* Content container */}
+        <div className="flex flex-1 overflow-hidden">
 
         {/* Help Panel */}
         {showHelp && (
@@ -509,7 +546,7 @@ const ConnectionPage = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Connection String Examples */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-3 text-gray-700">Connection String Examples</h3>
+                    <h3 className="text-lg font-title tracking-wide font-semibold mb-3 text-gray-700">Connection String Examples</h3>
                     <div className="space-y-3">
                       {getConnectionStringExamples().map((example, index) => (
                         <div key={index} className="border rounded-lg p-3">
@@ -584,8 +621,10 @@ const ConnectionPage = () => {
                     <FaDatabase className="h-6 w-6 text-teal-600" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-white">Connection Manager</h1>
-                    <p className="text-teal-100 text-sm mt-1">Connect to your SQL Server databases with advanced analytics</p>
+                    <h1 className="text-2xl font-title tracking-wide font-bold text-white">
+                      <span className="text-yellow-300">Connection</span> <span className="text-white">Manager</span>
+                    </h1>
+                    <p className="font-accent text-teal-100 text-sm mt-1">Connect to your SQL Server databases with advanced analytics</p>
                   </div>
                 </div>
                 
@@ -672,7 +711,7 @@ const ConnectionPage = () => {
               <div className="flex flex-col lg:flex-row lg:space-x-4">
                 {/* Connection form */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-4 lg:mb-0 flex-1">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                  <h2 className="text-xl font-title tracking-wide font-semibold text-gray-800 mb-4">
                     {editIndex === -1 ? 'Add New Connection' : 'Edit Connection'}
                   </h2>
 
@@ -680,7 +719,7 @@ const ConnectionPage = () => {
                   <div className="flex space-x-2 mb-4">
                     <button
                       onClick={() => setActiveTab('component')}
-                      className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2
+                      className={`flex-1 px-4 py-2.5 rounded-lg font-title tracking-wide font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2
                       ${activeTab === 'component' ? 'bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-md' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
                     >
                       <FaCog className="h-5 w-5" />
@@ -688,7 +727,7 @@ const ConnectionPage = () => {
                     </button>
                     <button
                       onClick={() => setActiveTab('full')}
-                      className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2
+                      className={`flex-1 px-4 py-2.5 rounded-lg font-title tracking-wide font-medium transition-all duration-300 ease-in-out flex items-center justify-center space-x-2
                       ${activeTab === 'full' ? 'bg-gradient-to-r from-teal-600 to-teal-500 text-white shadow-md' : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'}`}
                     >
                       <FaCodeBranch className="h-5 w-5" />
@@ -701,7 +740,7 @@ const ConnectionPage = () => {
                     {activeTab === 'component' && (
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="server" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="server" className="block text-sm font-accent font-medium text-gray-700">
                             Server <span className="text-red-500">*</span>
                             {renderTooltip('server', 'Enter your SQL Server instance name or IP address. Examples: localhost, 127.0.0.1, myserver.domain.com, or myserver\\SQLEXPRESS for named instances.')}
                           </label>
@@ -716,7 +755,7 @@ const ConnectionPage = () => {
                               value={server}
                               onChange={e => setServer(e.target.value)}
                               ref={serverInputRef}
-                              className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm ${
+                              className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none text-base py-3 px-4 ${
                                 validationErrors.server ? 'border-red-300' : 'border-gray-300'
                               }`}
                               placeholder="e.g., localhost, 192.168.1.100, or myserver\\SQLEXPRESS"
@@ -729,7 +768,7 @@ const ConnectionPage = () => {
                         </div>
 
                         <div>
-                          <label htmlFor="database" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="database" className="block text-sm font-accent font-medium text-gray-700">
                             Database <span className="text-red-500">*</span>
                             {renderTooltip('database', 'Enter the name of the database you want to connect to. This should be the exact database name as it appears on your SQL Server.')}
                           </label>
@@ -743,7 +782,7 @@ const ConnectionPage = () => {
                               id="database"
                               value={database}
                               onChange={e => setDatabase(e.target.value)}
-                              className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm ${
+                              className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none text-base py-3 px-4 ${
                                 validationErrors.database ? 'border-red-300' : 'border-gray-300'
                               }`}
                               placeholder="e.g., MyDatabase, Northwind, or AdventureWorks"
@@ -791,7 +830,7 @@ const ConnectionPage = () => {
                                     id="userId"
                                     value={userId}
                                     onChange={e => setUserId(e.target.value)}
-                                    className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm ${
+                                    className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none text-base py-3 px-4 ${
                                       validationErrors.userId ? 'border-red-300' : 'border-gray-300'
                                     }`}
                                     placeholder="e.g., sa, dbuser, myusername"
@@ -817,7 +856,7 @@ const ConnectionPage = () => {
                                     id="password"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    className="flex-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm"
+                                    className="flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none text-base py-3 px-4"
                                     placeholder="Enter password"
                                   />
                                   <button
@@ -846,7 +885,7 @@ const ConnectionPage = () => {
                               id="additionalParams"
                               value={additionalParams}
                               onChange={e => setAdditionalParams(e.target.value)}
-                              className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm"
+                              className="flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none text-base py-3 px-4 border border-gray-300  "
                               rows="3"
                               placeholder="Encrypt=true;Connection Timeout=60;Application Name=MyApp;"
                             />
@@ -862,7 +901,7 @@ const ConnectionPage = () => {
                     {activeTab === 'full' && (
                       <div>
                         <div>
-                          <label htmlFor="connectionString" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="connectionString" className="block text-sm font-accent font-medium text-gray-700">
                             Connection String <span className="text-red-500">*</span>
                           </label>
                           <div className="mt-1 flex rounded-md shadow-sm">
@@ -895,7 +934,7 @@ const ConnectionPage = () => {
 
                     {/* Connection Name Field */}
                     <div className="mt-6">
-                      <label htmlFor="connectionName" className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="connectionName" className="block text-sm font-accent font-medium text-gray-700">
                         Connection Name <span className="text-red-500">*</span>
                         {renderTooltip('connectionName', 'Give your connection a memorable name to easily identify it later. Use descriptive names like "Production DB" or "Local Development".')}
                       </label>
@@ -910,7 +949,7 @@ const ConnectionPage = () => {
                           value={connectionName}
                           onChange={e => setConnectionName(e.target.value)}
                           ref={connectionNameInputRef}
-                          className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm ${
+                          className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none text-base py-3 px-4 ${
                             validationErrors.connectionName ? 'border-red-300' : 'border-gray-300'
                           }`}
                           placeholder="e.g., Production Server, Local Development"
@@ -985,114 +1024,7 @@ const ConnectionPage = () => {
                     {/* Connection String Preview */}
                     {activeTab === 'component' && connectionStringPreview && (
                       <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Connection String Preview
-                          <button
-                            onClick={() => handleCopy(connectionStringPreview)}
-                            className="ml-2 text-teal-600 hover:text-teal-800"
-                          >
-                            <FaCopy size={12} />
-                          </button>
-                        </label>
-                        <div className="p-3 bg-gray-50 border border-gray-300 rounded-md text-sm font-mono text-gray-800 overflow-x-auto">
-                          {connectionStringPreview}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Connection Name Field */}
-                    <div className="mt-6">
-                      <label htmlFor="connectionName" className="block text-sm font-medium text-gray-700">
-                        Connection Name <span className="text-red-500">*</span>
-                        {renderTooltip('connectionName', 'Give your connection a memorable name to easily identify it later. Use descriptive names like "Production DB" or "Local Development".')}
-                      </label>
-                      <div className="mt-1 flex rounded-md shadow-sm">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                          <FaStar />
-                        </span>
-                        <input
-                          type="text"
-                          name="connectionName"
-                          id="connectionName"
-                          value={connectionName}
-                          onChange={e => setConnectionName(e.target.value)}
-                          ref={connectionNameInputRef}
-                          className={`flex-1 block w-full rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm ${
-                            validationErrors.connectionName ? 'border-red-300' : 'border-gray-300'
-                          }`}
-                          placeholder="e.g., Production Server, Local Development"
-                          required
-                        />
-                      </div>
-                      {validationErrors.connectionName && (
-                        <p className="mt-1 text-sm text-red-600">{validationErrors.connectionName}</p>
-                      )}
-                    </div>
-
-                    {/* Advanced Options Toggle */}
-                    <div className="mt-4">
-                      <button
-                        type="button"
-                        onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                        className="flex items-center text-sm text-teal-600 hover:text-teal-800 font-medium"
-                      >
-                        {showAdvancedOptions ? <MdOutlineArrowDropUp className="mr-1" /> : <MdOutlineArrowDropDown className="mr-1" />}
-                        Advanced Options
-                      </button>
-                    </div>
-
-                    {/* Advanced Options Panel */}
-                    {showAdvancedOptions && (
-                      <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id="trustServerCertificate"
-                              checked={trustServerCertificate}
-                              onChange={e => setTrustServerCertificate(e.target.checked)}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="trustServerCertificate" className="ml-2 block text-sm text-gray-700">
-                              Trust Server Certificate
-                              {renderTooltip('trustCert', 'Enable this for development environments or when using self-signed certificates. Disable for production with proper SSL certificates.')}
-                            </label>
-                          </div>
-                          
-                          <div className="flex items-center">
-                            <input
-                              type="checkbox"
-                              id="multipleActiveResultSets"
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="multipleActiveResultSets" className="ml-2 block text-sm text-gray-700">
-                              Multiple Active Result Sets (MARS)
-                              {renderTooltip('mars', 'Allows multiple commands to be executed on the same connection simultaneously.')}
-                            </label>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4">
-                          <label htmlFor="connectionTimeout" className="block text-sm font-medium text-gray-700">
-                            Connection Timeout (seconds)
-                            {renderTooltip('timeout', 'How long to wait when attempting to establish a connection before timing out. Default is 30 seconds.')}
-                          </label>
-                          <input
-                            type="number"
-                            id="connectionTimeout"
-                            min="5"
-                            max="300"
-                            defaultValue="30"
-                            className="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none sm:text-sm"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Connection String Preview */}
-                    {activeTab === 'component' && connectionStringPreview && (
-                      <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-accent font-medium text-gray-700 mb-2">
                           Connection String Preview
                           <button
                             onClick={() => handleCopy(connectionStringPreview)}
@@ -1111,7 +1043,7 @@ const ConnectionPage = () => {
                       <button
                         type="button"
                         onClick={resetForm}
-                        className="inline-flex items-center px-5 py-2.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 shadow-sm hover:shadow"
+                        className="inline-flex items-center px-5 py-2.5 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 shadow-sm hover:shadow font-accent"
                       >
                         <FaTimesCircle className="h-4 w-4 mr-2 text-gray-500" />
                         Cancel
@@ -1120,7 +1052,7 @@ const ConnectionPage = () => {
                         type="button"
                         onClick={() => handleTestConnection()}
                         disabled={isConnecting}
-                        className="inline-flex items-center px-5 py-2.5 rounded-md font-medium transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 shadow-sm hover:shadow bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                        className="inline-flex items-center px-5 py-2.5 rounded-md font-title tracking-wide font-medium transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 shadow-sm hover:shadow bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                       >
                         {isConnecting ? (
                           <>
@@ -1137,7 +1069,7 @@ const ConnectionPage = () => {
                       <button
                         type="submit"
                         disabled={isConnecting}
-                        className="inline-flex items-center px-5 py-2.5 rounded-md font-medium transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 shadow-sm hover:shadow bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-500 hover:to-teal-400 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                        className="inline-flex items-center px-5 py-2.5 rounded-md font-title tracking-wide font-medium transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 shadow-sm hover:shadow bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-500 hover:to-teal-400 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                       >
                         <FaSave className="h-4 w-4 mr-2" />
                         {editIndex === -1 ? 'Save Connection' : 'Update Connection'}
@@ -1375,6 +1307,7 @@ const ConnectionPage = () => {
           pauseOnHover
           theme="light"
         />
+        </div>
       </div>
     </ComponentErrorBoundary>
   );

@@ -34,20 +34,30 @@ const useClipboardAndDownload = (activeTable) => {
     URL.revokeObjectURL(url);
   };
 
-  // New function to download multiple files as a ZIP archive
+  // Function to download multiple files as a ZIP archive
+  // Accepts either an array of file objects or an object with filename:content pairs
   const downloadAsZip = async (files, zipName = 'download.zip') => {
     try {
       const zip = new JSZip();
       
-      // Add each file to the zip
-      files.forEach(file => {
-        const { content, filename, folder } = file;
-        if (folder) {
-          zip.folder(folder).file(filename, content);
-        } else {
+      if (Array.isArray(files)) {
+        // Handle array of file objects format
+        files.forEach(file => {
+          const { content, filename, folder } = file;
+          if (folder) {
+            zip.folder(folder).file(filename, content);
+          } else {
+            zip.file(filename, content);
+          }
+        });
+      } else if (typeof files === 'object') {
+        // Handle object format where keys are filenames and values are content
+        Object.entries(files).forEach(([filename, content]) => {
           zip.file(filename, content);
-        }
-      });
+        });
+      } else {
+        throw new Error('Invalid files format. Must be array or object.');
+      }
       
       // Generate the zip file
       const zipBlob = await zip.generateAsync({ type: "blob" });
